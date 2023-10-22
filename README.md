@@ -1,1 +1,1 @@
-# study_bot
+# BearBot
