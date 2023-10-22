@@ -3,7 +3,8 @@ from discord import app_commands
 from discord.ext import commands
 import os
 from dotenv import load_dotenv
-
+from pomodoro.pomodoro_menu import *
+from pomodoro.pomodoro_timer import *
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -27,7 +28,8 @@ def run_discord_bot():
 
 
     @bot.tree.command(name="dm", description="Send me a DM hohoho!")
-    async def dm(interaction: discord.Interaction):
+    @app_commands.describe(start_dm="Start a direct message!")
+    async def dm(interaction: discord.Interaction, start_dm: str):
         channel = await interaction.user.create_dm()
         await channel.send("Here is a dm!!")
         await interaction.response.send_message("A dm has been sent.", ephemeral=True)
@@ -39,9 +41,23 @@ def run_discord_bot():
 
 
     @bot.tree.command(name="pomodoro", description="Start a pomodoro timer.")
-    @app_commands.describe(start_timer="Starts a Pomodoro timer!")
-    async def pomodoro(interaction: discord.Interaction, start_timer: str):
-        await interaction.response.send_message(f"You're in **FOCUS** now, enjoy your progress! **BREAK** starts in {start_timer} min(s)")
+    async def pomodoro(interaction: discord.Interaction):
+        view = PomodoroMenu()
+        await interaction.response.send_message(f"How long you want to keep focus? **CHOOSE** one below", view=view)
+        await view.wait()
+
+        valid_values = [5, 25, 50, 60, 75, 100, 180]
+
+        if view.value in valid_values:
+            print(view.value)
+            timer = PomodoroTimer(view.value)
+            timer.start()
+            while timer.get_status():
+                timer.inc_second()
+                if timer.get_seconds() >= timer.max_seconds:
+                    timer.stop()
+            
+
 
 
     bot.run(TOKEN)

@@ -12,3 +12,6 @@
 *.njsproj
 *.sln
 *.sw?
+
+# Pycache repo
+**/__pycache__/
